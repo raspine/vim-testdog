@@ -4,7 +4,7 @@ vim-testdog
 
 vim-testdog is a simple plugin to help with running individual unit tests.
 Simply make sure your cursor is somewhere inside your unit test method and call
-TestDog(..). If successful, TestDog(..) will try to find the parts needed to create
+TestDog(..). TestDog(..) will try to track down the parts needed to create
 a complete execution line for that unit test and add it to the system clipboard.
 
 Example:
