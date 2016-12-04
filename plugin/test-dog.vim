@@ -28,14 +28,14 @@ function! TestDog(exe_prefix, app_prefix, app_postfix)
         for line in cm_list
             " look for the project name
             if line =~ "project("
-                let app_name = ExtractInner(line, "(", ")")
+                let app_name = <SID>ExtractInner(line, "(", ")")
                 " check if a cmake variable is used, if so make new loop and
                 " find the variable
                 if app_name =~ "${"
-                    let app_name = ExtractInner(app_name, "{", "}")
+                    let app_name = <SID>ExtractInner(app_name, "{", "}")
                     for app_line in cm_list
                         if app_line =~ app_name
-                            let app_name = ExtractInner(app_line, app_name, ")")
+                            let app_name = <SID>ExtractInner(app_line, app_name, ")")
                             let found = 1
                             break
                         endif
@@ -53,9 +53,8 @@ function! TestDog(exe_prefix, app_prefix, app_postfix)
     endif
 
     if found == 0
-        let l:dog_error = "Woof Woof! no scent of app name"
-        echo dog_error
-        return dog_error
+        echoerr "Woof! No scent of app name"
+        return
     endif
 
     " ..app_name found
@@ -64,26 +63,31 @@ function! TestDog(exe_prefix, app_prefix, app_postfix)
 
     "append test suite
     let l:curr_pos = getpos(".")
-    exec "silent! :keeppatterns /TEST_SUITE("
+    exec "silent! keeppatterns ?\\cSUITE\\_s*("
     let l:new_pos = getpos(".")
     if curr_pos == new_pos
-        let l:dog_error = "Woof Woof! no scent of test suite"
-        echo dog_error
-        return dog_error
+        echoerr "Woof! No scent of test suite"
+        return
     endif
-    exec "normal! %%l"
+    exec "normal! f(w"
     let testsuite = expand("<cword>")
     let dog_line = dog_line . testsuite
     :call setpos('.', curr_pos)
 
     "append test case
-    exec "normal! [[k%%l"
+    exec "silent! keeppatterns ?\\cCASE\\_s*("
+    let l:new_pos = getpos(".")
+    if curr_pos == new_pos
+        echoerr "Woof! No scent of test case"
+        return
+    endif
+    exec "normal! f(w"
     let testcase = expand("<cword>")
     :call setpos('.', curr_pos)
     let dog_line = dog_line . "/" . testcase
 
     " finally write to clipboard
     call setreg('+', dog_line)
-    echo "Woof woof! ". dog_line
+    echo "Good dog! " . dog_line
 endfunction
 " vim:set ft=vim sw=4 sts=2 et:
