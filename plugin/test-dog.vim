@@ -73,7 +73,7 @@ function! s:FindCMakeExeName()
         let cm_list = readfile(build_dir . '/../CMakeLists.txt')
         for line in cm_list
             if found_var == 0
-            " look for the project name in case there was no local CMakeLists.txt
+                " look for the project name in case there was no local CMakeLists.txt
                 if line =~ "project\\_s*("
                     let main_app_name = <SID>ExtractInner(line, "(", ")")
                     " check if a cmake variable is used, if so make new loop and
@@ -89,8 +89,6 @@ function! s:FindCMakeExeName()
                     else
                         return build_dir . "/" . main_app_name
                     endif
-                else
-                    return ""
                 endif
             else
                 " in case we do have a var_name, we look for a set function
@@ -156,6 +154,7 @@ function! TestDogExecutable(tool_prefix)
 
     " finally write to clipboard
     call setreg('+', dog_line)
-    echo "Good dog! " . dog_line
+    call setreg('*', dog_line)
+    echo "Woof Woof! " . dog_line
 endfunction
 " vim:set ft=vim sw=4 sts=2 et:
