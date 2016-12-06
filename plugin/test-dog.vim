@@ -16,50 +16,116 @@ function! s:ExtractInner(str, left_delim, right_delim)
     return inner
 endfunction
 
-function! TestDog(exe_prefix, app_prefix, app_postfix)
-    " find the app name...
-    " find the CMake build dir, our main CMakeLists.txt should be lurking just above
-    let l:found = 0
+" A cmake parser with the single purpose of finding the executable name
+" for the % file. The function only returns a single executable name and 
+" do not handle executable names built with multiple concatenated cmake variables.
+function! s:FindCMakeExeName()
+    let l:found_var = 0
+    let l:var_name = ""
     let l:app_name = ""
     let l:cmake_build_dir = get(g:, 'cmake_build_dir', 'build')
     let l:build_dir = finddir(l:cmake_build_dir, '.;')
-    if filereadable(build_dir . '/../CMakeLists.txt')
-        let cm_list = readfile(build_dir . '/../CMakeLists.txt')
+    if build_dir == ""
+        return ""
+    endif
+        
+    " look for CMakeLists.txt in current dir
+    let l:curr_cmake = expand("%:h") . '/CMakeLists.txt'
+    if filereadable(curr_cmake)
+        let cm_list = readfile(curr_cmake)
         for line in cm_list
             " look for the project name
-            if line =~ "project("
-                let app_name = <SID>ExtractInner(line, "(", ")")
-                " check if a cmake variable is used, if so make new loop and
-                " find the variable
-                if app_name =~ "${"
-                    let app_name = <SID>ExtractInner(app_name, "{", "}")
-                    for app_line in cm_list
-                        if app_line =~ app_name
-                            let app_name = <SID>ExtractInner(app_line, app_name, ")")
-                            let found = 1
+            if line =~ "add_executable\\_s*("
+                let var_name = <SID>ExtractInner(line, "(", " ")
+                if var_name =~ "${\\_s*project_name\\_s*}"
+                    for proj_line in cm_list
+                        if proj_line =~ "project\\_s*("
+                            let var_name = <SID>ExtractInner(proj_line, "(", ")")
+                            if var_name =~ "${"
+                                let app_name = var_name
+                                let var_name = <SID>ExtractInner(var_name, "{", "}")
+                                let found_var = 1
+                            else
+                                return build_dir . "/" . var_name
+                            endif
                             break
                         endif
                     endfor
-                 else
-                     let found = 1
-                     break
+                elseif var_name =~ "${"
+                    let app_name = var_name
+                    let var_name = <SID>ExtractInner(var_name, "{", "}")
+                    let found_var = 1
+                else
+                    return build_dir . "/" . var_name
                 endif
             endif
         endfor
-    else
-        let l:dog_error = "Woof Woof! no scent of CMakeList.txt"
-        echo dog_error
-        return dog_error
+        if found_var == 0
+            return ""
+        endif
     endif
+    
+    " couldn't conclude the app name in a local CMakeLists.txt
+    " let's look in the root CMakeLists.txt, lurking above our build dir
+    let main_app_name = ""
+    let main_app_found = 0
+    if filereadable(build_dir . '/../CMakeLists.txt')
+        let cm_list = readfile(build_dir . '/../CMakeLists.txt')
+        for line in cm_list
+            if found_var == 0
+                " look for the project name in case there was no local CMakeLists.txt
+                if line =~ "project\\_s*("
+                    let main_app_name = <SID>ExtractInner(line, "(", ")")
+                    " check if a cmake variable is used, if so make new loop and
+                    " find the variable
+                    if main_app_name =~ "${"
+                        let main_app_name = <SID>ExtractInner(main_app_name, "{", "}")
+                        for app_line in cm_list
+                            if app_line =~ main_app_name
+                                let main_app_name = <SID>ExtractInner(app_line, main_app_name, ")")
+                                return build_dir . "/" . main_app_name
+                            endif
+                        endfor
+                    else
+                        return build_dir . "/" . main_app_name
+                    endif
+                endif
+            else
+                " in case we do have a var_name, we look for a set function
+                if line =~ "set\\_s*(\\_s*" . var_name
+                    let main_app_name = <SID>ExtractInner(line, var_name, ")")
+                    let main_app_found = 1
+                endif
+            endif
+        endfor
 
-    if found == 0
+        if main_app_found == 0
+            return ""
+        endif
+
+        " If here, we have a e.g. main_app_name="my_app", e.g. var_name="APP_NAME"
+        " and e.g. app_name="${APP_NAME}_test".
+        " So we make a substitution of what we got, e.g. to my_app_test.
+        " echo main_app_name . " " . var_name . " " . app_name
+        let app_name = substitute(app_name, "${\\_s*" . var_name . "\\_s*}", main_app_name, "")
+        return build_dir . "/" . app_name
+    else
+        return ""
+    endif
+endfunction
+
+function! TestDogExecutable(tool_prefix)
+    " find the app name...
+    let l:app_name = <SID>FindCMakeExeName()
+
+    if app_name == ""
         echoerr "Woof! No scent of app name"
         return
     endif
 
     " ..app_name found
     " our line so far
-    let dog_line = a:exe_prefix . " " . build_dir . "/" . a:app_prefix . app_name . a:app_postfix . " --run_test="
+    let dog_line = a:tool_prefix . " " . app_name . " --run_test="
 
     "append test suite
     let l:curr_pos = getpos(".")
@@ -88,6 +154,7 @@ function! TestDog(exe_prefix, app_prefix, app_postfix)
 
     " finally write to clipboard
     call setreg('+', dog_line)
-    echo "Good dog! " . dog_line
+    call setreg('*', dog_line)
+    echo "Woof Woof! " . dog_line
 endfunction
 " vim:set ft=vim sw=4 sts=2 et:
