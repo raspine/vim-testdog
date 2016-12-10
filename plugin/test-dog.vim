@@ -118,7 +118,7 @@ function! s:FindCMakeExeName()
     endif
 endfunction
 
-function! s:GetTestSuite()
+function! s:FindBoostTestSuite()
     let l:curr_pos = getpos(".")
     exec "silent! keeppatterns ?\\cSUITE\\_s*("
     let l:new_pos = getpos(".")
@@ -131,7 +131,7 @@ function! s:GetTestSuite()
     return test_suite
 endfunction
 
-function! s:GetTestCase()
+function! s:FindBoostTestCase()
     let l:curr_pos = getpos(".")
     exec "silent! keeppatterns ?\\cCASE\\_s*("
     let l:new_pos = getpos(".")
@@ -148,8 +148,9 @@ function! s:BuildTestArg()
     " our line so far
     let l:dog_line = "--run_test="
 
+    "TODO: support more test frameworks through the use of global variable
     "append test suite
-    let l:test_suite = <SID>GetTestSuite()
+    let l:test_suite = <SID>FindBoostTestSuite()
     if test_suite == ""
         echoerr "Woof! No scent of test suite"
         return ""
@@ -157,7 +158,7 @@ function! s:BuildTestArg()
     let dog_line = dog_line . test_suite
 
     "append test case
-    let l:test_case = <SID>GetTestCase()
+    let l:test_case = <SID>FindBoostTestCase()
     if test_case == ""
         echoerr "Woof! No scent of test case"
         return ""
