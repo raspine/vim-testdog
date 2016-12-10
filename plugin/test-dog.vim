@@ -7,6 +7,10 @@ if exists("g:loaded_test_dog") || &cp || v:version < 700
 endif
 let g:loaded_test_dog = 1
 
+" public interface
+command! -nargs=? TestDogExe call s:TestDogExecutable(<q-args>)
+command! TestDogArg call s:TestDogArgument()
+
 " TODO: Is there a Vim function for this?
 function! s:ExtractInner(str, left_delim, right_delim)
     let astr = " " . a:str . " "
@@ -114,47 +118,83 @@ function! s:FindCMakeExeName()
     endif
 endfunction
 
-function! TestDogExecutable(tool_prefix)
-    " find the app name...
-    let l:app_name = <SID>FindCMakeExeName()
-
-    if app_name == ""
-        echoerr "Woof! No scent of app name"
-        return
-    endif
-
-    " ..app_name found
-    " our line so far
-    let dog_line = a:tool_prefix . " " . app_name . " --run_test="
-
-    "append test suite
+function! s:GetTestSuite()
     let l:curr_pos = getpos(".")
     exec "silent! keeppatterns ?\\cSUITE\\_s*("
     let l:new_pos = getpos(".")
     if curr_pos == new_pos
-        echoerr "Woof! No scent of test suite"
-        return
+        return ""
     endif
     exec "normal! f(w"
-    let testsuite = expand("<cword>")
-    let dog_line = dog_line . testsuite
+    let test_suite = expand("<cword>")
     :call setpos('.', curr_pos)
+    return test_suite
+endfunction
 
-    "append test case
+function! s:GetTestCase()
+    let l:curr_pos = getpos(".")
     exec "silent! keeppatterns ?\\cCASE\\_s*("
     let l:new_pos = getpos(".")
     if curr_pos == new_pos
-        echoerr "Woof! No scent of test case"
-        return
+        return ""
     endif
     exec "normal! f(w"
-    let testcase = expand("<cword>")
+    let test_case = expand("<cword>")
     :call setpos('.', curr_pos)
-    let dog_line = dog_line . "/" . testcase
-
-    " finally write to clipboard
-    call setreg('+', dog_line)
-    call setreg('*', dog_line)
-    echo "Woof Woof! " . dog_line
+    return test_case
 endfunction
+
+function! s:BuildTestArg()
+    " our line so far
+    let l:dog_line = "--run_test="
+
+    "append test suite
+    let l:test_suite = <SID>GetTestSuite()
+    if test_suite == ""
+        echoerr "Woof! No scent of test suite"
+        return ""
+    endif
+    let dog_line = dog_line . test_suite
+
+    "append test case
+    let l:test_case = <SID>GetTestCase()
+    if test_case == ""
+        echoerr "Woof! No scent of test case"
+        return ""
+    endif
+    return dog_line . "/" . test_case
+endfunction
+
+function! s:TestDogExecutable(tool_prefix)
+    " find the app name...
+    let l:app_name = <SID>FindCMakeExeName()
+
+    if l:app_name == ""
+        echoerr "Woof! No scent of app name"
+        return
+    endif
+
+    let l:test_arg = <SID>BuildTestArg()
+    if l:test_arg == ""
+        return
+    endif
+
+    let l:dog_line = a:tool_prefix . " " . l:app_name . " " . l:test_arg
+
+    call setreg('+', l:dog_line)
+    call setreg('*', l:dog_line)
+    echo "Woof Woof! " . l:dog_line
+endfunction
+
+function! s:TestDogArgument()
+    let l:test_arg = <SID>BuildTestArg()
+    if l:test_arg == ""
+        return
+    endif
+
+    call setreg('+', l:test_arg)
+    call setreg('*', l:test_arg)
+    echo "Woof Woof! " . l:test_arg
+endfunction
+
 " vim:set ft=vim sw=4 sts=2 et:
