@@ -7,10 +7,6 @@ if exists("g:loaded_test_dog") || &cp || v:version < 700
 endif
 let g:loaded_test_dog = 1
 
-" public interface
-command! -nargs=? TestDogExe call s:TestDogExecutable(<q-args>)
-command! TestDogArg call s:TestDogArgument()
-
 " TODO: Is there a Vim function for this?
 function! s:ExtractInner(str, left_delim, right_delim)
     let astr = " " . a:str . " "
@@ -20,10 +16,10 @@ function! s:ExtractInner(str, left_delim, right_delim)
     return inner
 endfunction
 
-" A cmake parser with the single purpose of finding the executable name
-" for the % file. The function only returns a single executable name and 
-" do not handle executable names built with multiple concatenated cmake variables.
-function! s:FindCMakeExeName()
+" A cmake parser with the single purpose of finding the target name
+" for the % file. The function only returns a single target name and
+" do not handle target names built with multiple concatenated cmake variables.
+function! s:FindCMakeTargetName()
     let l:found_var = 0
     let l:var_name = ""
     let l:app_name = ""
@@ -32,7 +28,7 @@ function! s:FindCMakeExeName()
     if build_dir == ""
         return ""
     endif
-        
+
     " look for CMakeLists.txt in current dir
     let l:curr_cmake = expand("%:h") . '/CMakeLists.txt'
     if filereadable(curr_cmake)
@@ -68,7 +64,7 @@ function! s:FindCMakeExeName()
             return ""
         endif
     endif
-    
+
     " couldn't conclude the app name in a local CMakeLists.txt
     " let's look in the root CMakeLists.txt, lurking above our build dir
     let main_app_name = ""
@@ -144,8 +140,8 @@ function! s:FindBoostTestCase()
     return test_case
 endfunction
 
-function! s:BuildTestArg()
-    " our line so far
+function! s:BuildBoostTestArg()
+    " boost argument for test suite/test case filtering
     let l:dog_line = "--run_test="
 
     "TODO: support more test frameworks through the use of global variable
@@ -166,36 +162,36 @@ function! s:BuildTestArg()
     return dog_line . "/" . test_case
 endfunction
 
-function! s:TestDogExecutable(tool_prefix)
-    " find the app name...
-    let l:app_name = <SID>FindCMakeExeName()
-
-    if l:app_name == ""
-        echoerr "Woof! No scent of app name"
-        return
-    endif
-
-    let l:test_arg = <SID>BuildTestArg()
-    if l:test_arg == ""
-        return
-    endif
-
-    let l:dog_line = a:tool_prefix . " " . l:app_name . " " . l:test_arg
-
-    call setreg('+', l:dog_line)
-    call setreg('*', l:dog_line)
-    echo "Woof Woof! " . l:dog_line
+function! s:BuildTestArg()
+    "TODO: support more test frameworks through the use of global variable
+    "append test suite
+    return <SID>BuildBoostTestArg()
 endfunction
 
-function! s:TestDogArgument()
+function! TestDogExecutable()
+    " find the app name...
+    let l:app_name = <SID>FindCMakeTargetName()
+
+    if l:app_name == ""
+        echoerr "Woof! No scent of target name"
+        return
+    endif
+
     let l:test_arg = <SID>BuildTestArg()
     if l:test_arg == ""
         return
     endif
 
-    call setreg('+', l:test_arg)
-    call setreg('*', l:test_arg)
-    echo "Woof Woof! " . l:test_arg
+    return l:app_name . " " . l:test_arg
+endfunction
+
+function! TestDogArgument()
+    let l:test_arg = <SID>BuildTestArg()
+    if l:test_arg == ""
+        return
+    endif
+
+    return l:test_arg
 endfunction
 
 " vim:set ft=vim sw=4 sts=2 et:

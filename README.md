@@ -1,13 +1,12 @@
 vim-testdog
 =============
-### Creates unit test execution line ###
+### Creates unit test execution lines ###
 
 vim-testdog helps to create execution lines for unit test runners.
 
 Simply position your cursor somewhere inside your unit test method and call
-TestDogExec. TestDog will (hopefully) track down the parts needed to
-create a complete execution line for that unit test and add it to the system
-clipboard.
+TestDogExecutable. TestDog will (hopefully) track down the parts needed and
+return a complete execution line.
 
 Example:
 ```
@@ -24,18 +23,22 @@ BOOST_AUTO_TEST_CASE(MyTestCase)
 ```
 With the cursor inside MyTestCase:
 ```
-:TestDogExec
+:echo TestDogExecutable()
 ```
 should generate:
 
 "build/MyAppName_test --run_test=MyTestSuite/MyTestCase"
 
-A tool prefix argument may also be added.
-E.g.:
+These are example mappings to invoke TestDog:
 ```
-nnoremap <leader>tt :TestDogExe<cr>
-nnoremap <leader>tg :TestDogExe gdb --args<cr>
-nnoremap <leader>tv :TestDogExe valgrind<cr>
+" run test case directly in vim
+nnoremap <leader>tt :exec "!" . TestDogExecutable()<cr>
+
+" spawn a gdb session in a separate terminal (requires Tim Pope's vim-dispatch plugin)
+nnoremap <leader>tg :exec "Spawn urxvt -e gdb --args " . TestDogExecutable()<cr>
+
+" run the test case under valgrind
+nnoremap <leader>tv :exec "!valgrind " . TestDogExecutable()<cr>
 ```
 
 There's also the TestDogArg command that only creates the test runner argument,
