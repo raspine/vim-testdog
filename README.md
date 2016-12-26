@@ -39,6 +39,9 @@ nnoremap <leader>tg :exec "Spawn urxvt -e gdb --args " . TestDogExecutable()<cr>
 
 " run the test case under valgrind
 nnoremap <leader>tv :exec "!valgrind " . TestDogExecutable()<cr>
+
+" copy the execution line to clipboard
+nnoremap <leader>tr :call setreg('+', TestDogExecutable())<cr>
 ```
 
 There's also the TestDogArg command that only creates the test runner argument,
