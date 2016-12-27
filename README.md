@@ -50,8 +50,9 @@ nnoremap <leader>tr :call setreg('+', FindCMakeTarget() . TestCaseArg())<cr>
 ```
 
 I further combine vim-testdog with [vim-breakgutter](http://github.com/raspine/vim-breakgutter) providing
-the following line (that actually goes into my .vimrc) whenever I need to debuf a test case:
+the following magical line (that actually goes into my .vimrc) whenever I need to debug a test case:
 ```
+" Spawn requires Tim Pope's vim-dispatch plugin
 nnoremap <leader>dg :exec "Spawn urxvt -e gdb" . GetGdbBreakpointArgs() . " --args " . FindCMakeTarget() . TestCaseArg()<cr>
 
 ```
