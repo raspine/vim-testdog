@@ -49,6 +49,13 @@ nnoremap <leader>tv :exec "!valgrind" . FindCMakeTarget() . TestSuiteArg()<cr>
 nnoremap <leader>tr :call setreg('+', FindCMakeTarget() . TestCaseArg())<cr>
 ```
 
+I further combine vim-testdog with [vim-breakgutter](http://github.com/raspine/vim-breakgutter) providing
+the following line (that actually goes into my .vimrc) whenever I need to debuf a test case:
+```
+nnoremap <leader>dg :exec "Spawn urxvt -e gdb" . GetGdbBreakpointArgs() . " --args " . FindCMakeTarget() . TestCaseArg()<cr>
+
+```
+
 ## Contributing
 vim-testdog is currently implemented for the boost unit test framework. As it's
 kind of hard to make this type of plugin work for every test framework,
