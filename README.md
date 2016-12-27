@@ -54,3 +54,7 @@ vim-testdog is currently implemented for the boost unit test framework. As it's
 kind of hard to make this type of plugin work for every test framework,
 contributions are welcomed.
 
+## License
+
+Distributed under the same terms as Vim itself.  See the vim license.
+
