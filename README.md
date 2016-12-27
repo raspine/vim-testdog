@@ -1,12 +1,14 @@
 vim-testdog
 =============
-### Creates unit test execution lines ###
+### Sniffs out test runner arguments ###
 
-vim-testdog helps to create execution lines for unit test runners.
+vim-testdog helps to create unit test arguments for unit test runners.
 
-Simply position your cursor somewhere inside your unit test method and call
-TestDogExecutable. TestDog will (hopefully) track down the parts needed and
-return a complete execution line.
+It provides two methods: `TestSuiteArg()` and `TestCaseArg()`.
+
+Simply position your cursor somewhere inside a unit test and call
+`:echo TestCaseArg()`. TestDog will (hopefully) track down the parts needed and
+return the test runner argument.
 
 Example:
 ```
@@ -23,32 +25,31 @@ BOOST_AUTO_TEST_CASE(MyTestCase)
 ```
 With the cursor inside MyTestCase:
 ```
-:echo TestDogExecutable()
+:echo TestCaseArg()
 ```
 should generate:
 
-"build/MyAppName_test --run_test=MyTestSuite/MyTestCase"
+"--run_test=MyTestSuite/MyTestCase"
 
-These are example mappings to invoke TestDog:
+I typically combine TestDog with [vim-target](https://github.com/raspine/vim-target) 
+
+These are example mappings to invoke vim-target and vim-testdog:
 ```
-" run test case directly in vim
-nnoremap <leader>tt :exec "!" . TestDogExecutable()<cr>
+" run test suite directly in vim
+nnoremap <leader>tt :exec "!". FindCMakeTarget() . TestSuiteArg()<cr>
 
-" spawn a gdb session in a separate terminal (requires Tim Pope's vim-dispatch plugin)
-nnoremap <leader>tg :exec "Spawn urxvt -e gdb --args " . TestDogExecutable()<cr>
+" spawn a gdb session in a separate terminal using Tim Pope's vim-dispatch plugin
+nnoremap <leader>tg :exec "Spawn urxvt -e gdb --args" FindCMakeTarget() . TestCaseArg()<cr>
 
-" run the test case under valgrind
-nnoremap <leader>tv :exec "!valgrind " . TestDogExecutable()<cr>
+" run the test suite under valgrind
+nnoremap <leader>tv :exec "!valgrind" . FindCMakeTarget() . TestSuiteArg()<cr>
 
 " copy the execution line to clipboard
-nnoremap <leader>tr :call setreg('+', TestDogExecutable())<cr>
+nnoremap <leader>tr :call setreg('+', FindCMakeTarget() . TestCaseArg())<cr>
 ```
 
-There's also the TestDogArg command that only creates the test runner argument,
-i.e. the "--run_test=MyTestSuite/MyTestCase" from the example above.
-
 ## Contributing
-vim-testdog is currently implemented for CMake builds and the boost unit test
-framework. As it's kind of hard to make this type of plugin work for every
-setup, contributions are welcomed.
+vim-testdog is currently implemented for the boost unit test framework. As it's
+kind of hard to make this type of plugin work for every test framework,
+contributions are welcomed.
 
