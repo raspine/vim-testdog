@@ -31,6 +31,7 @@ should generate:
 
 "--run_test=MyTestSuite/MyTestCase"
 
+## Usage
 I typically combine TestDog with [vim-target](https://github.com/raspine/vim-target) 
 
 These are example mappings to invoke vim-target and vim-testdog:
