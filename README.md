@@ -37,23 +37,23 @@ I typically combine TestDog with [vim-target](https://github.com/raspine/vim-tar
 These are example mappings to invoke vim-target and vim-testdog:
 ```
 " run test suite directly in vim
-nnoremap <leader>tt :exec "!". FindCMakeTarget() . TestSuiteArg()<cr>
+nnoremap <leader>tt :exec "!". FindExeTarget() . TestSuiteArg()<cr>
 
 " spawn a gdb session in a separate terminal using Tim Pope's vim-dispatch plugin
-nnoremap <leader>tg :exec "Spawn urxvt -e gdb --args" FindCMakeTarget() . TestCaseArg()<cr>
+nnoremap <leader>tg :exec "Spawn urxvt -e gdb --args" FindExeTarget() . TestCaseArg()<cr>
 
 " run the test suite under valgrind
-nnoremap <leader>tv :exec "!valgrind" . FindCMakeTarget() . TestSuiteArg()<cr>
+nnoremap <leader>tv :exec "!valgrind" . FindExeTarget() . TestSuiteArg()<cr>
 
 " copy the execution line to clipboard
-nnoremap <leader>tr :call setreg('+', FindCMakeTarget() . TestCaseArg())<cr>
+nnoremap <leader>tr :call setreg('+', FindExeTarget() . TestCaseArg())<cr>
 ```
 
 I further combine vim-testdog with [vim-breakgutter](http://github.com/raspine/vim-breakgutter) providing
 the following magical line (that actually goes into my .vimrc) whenever I need to debug a test case:
 ```
 " Spawn requires Tim Pope's vim-dispatch plugin
-nnoremap <leader>dg :exec "Spawn urxvt -e gdb" . GetGdbBreakpointArgs() . " --args " . FindCMakeTarget() . TestCaseArg()<cr>
+nnoremap <leader>dg :exec "Spawn urxvt -e gdb" . GetGdbBreakpointArgs() . " --args " . FindExeTarget() . TestCaseArg()<cr>
 
 ```
 
