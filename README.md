@@ -32,6 +32,11 @@ should generate:
 "--run_test=MyTestSuite/MyTestCase"
 
 ## Usage
+Example:
+```
+" copy test argument to clipboard
+nnoremap <leader>tr :call setreg('+', TestCaseArg())<cr>
+```
 I typically combine TestDog with [vim-target](https://github.com/raspine/vim-target) 
 
 These are example mappings to invoke vim-target and vim-testdog:
@@ -45,12 +50,12 @@ nnoremap <leader>tg :exec "Spawn urxvt -e gdb --args" FindExeTarget() . TestCase
 " run the test suite under valgrind
 nnoremap <leader>tv :exec "!valgrind" . FindExeTarget() . TestSuiteArg()<cr>
 
-" copy the execution line to clipboard
+" copy the full execution line to clipboard
 nnoremap <leader>tr :call setreg('+', FindExeTarget() . TestCaseArg())<cr>
 ```
 
 I further combine vim-testdog with [vim-breakgutter](http://github.com/raspine/vim-breakgutter) providing
-the following magical line (that actually goes into my .vimrc) whenever I need to debug a test case:
+the following magical line whenever I need to debug a test case:
 ```
 " Spawn requires Tim Pope's vim-dispatch plugin
 nnoremap <leader>dg :exec "Spawn urxvt -e gdb" . GetGdbBreakpointArgs() . " --args " . FindExeTarget() . TestCaseArg()<cr>
