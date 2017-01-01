@@ -154,7 +154,7 @@ function! s:FrameworkSelect()
     while 1
         echo '0) abort'
         for index in sort(keys(g:test_framework))
-            echo get(g:test_framework, index). ") ". index 
+            echo get(g:test_framework, index). ") ". index
         endfor
         let l:max = get(g:test_framework, index)
         call inputsave()
@@ -162,7 +162,7 @@ function! s:FrameworkSelect()
         call inputrestore()
         if sel > max
             echoerr "Please select a number within range"
-        elseif sel == type(0) 
+        elseif sel == type(0)
             return ""
         else
             return sort(keys(g:test_framework))[sel - 1]
