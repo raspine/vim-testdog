@@ -10,6 +10,8 @@ Simply position your cursor somewhere inside a unit test and call
 `:echo TestCaseArg()`. TestDog will (hopefully) track down the parts needed and
 return the test runner argument.
 
+Currently there's support for the Boost and Google unit test frame works.
+
 Example:
 ```
 ..
@@ -31,6 +33,9 @@ should generate:
 
 "--run_test=MyTestSuite/MyTestCase"
 
+## Installation
+Pathogen, Vundle, etc..
+
 ## Usage
 Example:
 ```
@@ -45,10 +50,10 @@ These are example mappings to invoke vim-target and vim-testdog:
 nnoremap <leader>tt :exec "!". FindExeTarget() . TestSuiteArg()<cr>
 
 " spawn a gdb session in a separate terminal using Tim Pope's vim-dispatch plugin
-nnoremap <leader>tg :exec "Spawn urxvt -e gdb --args" FindExeTarget() . TestCaseArg()<cr>
+nnoremap <leader>tg :exec "Spawn urxvt -e gdb --args " FindExeTarget() . TestCaseArg()<cr>
 
 " run the test suite under valgrind
-nnoremap <leader>tv :exec "!valgrind" . FindExeTarget() . TestSuiteArg()<cr>
+nnoremap <leader>tv :exec "!valgrind " . FindExeTarget() . TestSuiteArg()<cr>
 
 " copy the full execution line to clipboard
 nnoremap <leader>tr :call setreg('+', FindExeTarget() . TestCaseArg())<cr>
@@ -58,16 +63,25 @@ I further combine vim-testdog with [vim-breakgutter](http://github.com/raspine/v
 the following magical line whenever I need to debug a test case:
 ```
 " Spawn requires Tim Pope's vim-dispatch plugin
-nnoremap <leader>dg :exec "Spawn urxvt -e gdb" . GetGdbBreakpointArgs() . " --args " . FindExeTarget() . TestCaseArg()<cr>
+nnoremap <leader>dg :exec "Spawn urxvt -e gdb " . GetGdbBreakpointArgs() . " --args " . FindExeTarget() . TestCaseArg()<cr>
 
 ```
 
+## Variables
+There's only one variable you might want to set in your .vimrc:
+```
+let g:preferred_framework = 'boost' "default
+_OR_
+let g:preferred_framework = 'google'
+```
+If testdog fails to sniff out the test runner arguments, it will prompt the
+caller to change preferred framework. The new preferred is non-persistent (so
+that's why you might want to set it).
+
 ## Contributing
-vim-testdog is currently implemented for the boost unit test framework. As it's
-kind of hard to make this type of plugin work for every test framework,
+As it's kind of hard to make this type of plugin work for every test framework,
 contributions are welcomed.
 
 ## License
-
 Distributed under the same terms as Vim itself.  See the vim license.
 
