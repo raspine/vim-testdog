@@ -32,9 +32,11 @@ function! TestCaseArg()
 endfunction
 
 " local methods
+"
+" start of boost unit test frame work methods
 function! s:FindBoostTestSuite()
     let l:curr_pos = getpos(".")
-    exec "silent! keeppatterns ?\\cSUITE\\_s*("
+    exec "silent! keeppatterns ?\\SUITE\\_s*("
     let l:new_pos = getpos(".")
     if curr_pos == new_pos
         return ""
@@ -47,7 +49,7 @@ endfunction
 
 function! s:FindBoostTestCase()
     let l:curr_pos = getpos(".")
-    exec "silent! keeppatterns ?\\cCASE\\_s*("
+    exec "silent! keeppatterns ?\\CASE\\_s*("
     let l:new_pos = getpos(".")
     if curr_pos == new_pos
         return ""
@@ -86,39 +88,67 @@ function! s:BuildBoostTestCaseArg()
     endif
     return dog_line . "/" . test_case
 endfunction
+" end of boost unit test frame work methods
 
-function! s:BuildGooleTestSuiteArg()
-    let l:dog_line = "--filter="
+" start of google unit test frame work methods
+function! s:FindGoogleTestSuite()
+    let l:curr_pos = getpos(".")
+    exec "silent! keeppatterns ?\\TEST\\_s*("
+    let l:new_pos = getpos(".")
+    if curr_pos == new_pos
+        return ""
+    endif
+    exec "normal! f(w"
+    let test_suite = expand("<cword>")
+    :call setpos('.', curr_pos)
+    return test_suite
+endfunction
 
-    " let l:test_suite = <SID>FindBoostTestSuite()
-    " if test_suite == ""
-    "     echoerr "Woof! No scent of test suite"
-    "     return ""
-    " endif
-    " return dog_line . test_suite
-    return "gsuite"
+function! s:FindGoogleTestCase()
+    let l:curr_pos = getpos(".")
+    exec "silent! keeppatterns ?\\TEST\\_s*("
+    let l:new_pos = getpos(".")
+    if curr_pos == new_pos
+        return ""
+    endif
+    exec "normal! f(%b"
+    let test_case = expand("<cword>")
+    :call setpos('.', curr_pos)
+    return test_case
+endfunction
+
+function! s:BuildGoogleTestSuiteArg()
+    let l:dog_line = "--gtest_filter="
+
+    let l:test_suite = <SID>FindGoogleTestSuite()
+    if test_suite == ""
+        echoerr "Woof! No scent of test suite"
+        return ""
+    endif
+    return dog_line . test_suite
 endfunction
 
 function! s:BuildGoogleTestCaseArg()
-    let l:dog_line = "--filter="
+    let l:dog_line = "--gtest_filter="
 
-    " let l:test_suite = <SID>FindBoostTestSuite()
-    " if test_suite == ""
-    "     echoerr "Woof! No scent of test suite"
-    "     return ""
-    " endif
-    " let dog_line = dog_line . test_suite
+    let l:test_suite = <SID>FindGoogleTestSuite()
+    if test_suite == ""
+        echoerr "Woof! No scent of test suite"
+        return ""
+    endif
+    let dog_line = dog_line . test_suite
 
-    " let l:test_case = <SID>FindBoostTestCase()
-    " if test_case == ""
-    "     echoerr "Woof! No scent of test case"
-    "     return ""
-    " endif
-    " return dog_line . "/" . test_case
-    return "gcase"
+    let l:test_case = <SID>FindGoogleTestCase()
+    if test_case == ""
+        echoerr "Woof! No scent of test case"
+        return ""
+    endif
+    return dog_line . "." . test_case
 endfunction
+" end of google unit test frame work methods
 
-function! FrameworkSelect()
+" prompts the caller for changing preferred test framework
+function! s:FrameworkSelect()
     echo "Try another framework?"
     let l:sel = 0
     while 1
@@ -130,13 +160,14 @@ function! FrameworkSelect()
         call inputsave()
         let sel = input('Select index: ')
         call inputrestore()
-        if sel == type(0) || sel > max
+        if sel > max
             echoerr "Please select a number within range"
+        elseif sel == type(0) 
+            return ""
         else
-            break
+            return sort(keys(g:test_framework))[sel - 1]
         endif
     endwhile
-    return sort(keys(g:test_framework))[sel - 1]
 endfunction
 
 " test runner router method
@@ -150,7 +181,12 @@ function! s:BuildTestRunnerTestSuiteArg()
         endif
 
         if l:res == ""
-            g:preferred_framework = <SID>FrameworkSelect()
+            let l:framework = <SID>FrameworkSelect()
+            if l:framework == ""
+                break
+            else
+                let g:preferred_framework = l:framework
+            endif
         else
             break
         endif
@@ -161,10 +197,27 @@ endfunction
 
 " test runner router method
 function! s:BuildTestRunnerTestCaseArg()
-    "TODO: support more test frameworks through the use of global variable
-    "append test suite
-    let l:res = <SID>BuildBoostTestCaseArg()
-    return res
+    let l:res = ""
+    while 1
+        if get(g:test_framework, g:preferred_framework) == g:test_framework.boost
+            let l:res = <SID>BuildBoostTestCaseArg()
+        elseif get(g:test_framework, g:preferred_framework) == g:test_framework.google
+            let l:res = <SID>BuildGoogleTestCaseArg()
+        endif
+
+        if l:res == ""
+            let l:framework = <SID>FrameworkSelect()
+            if l:framework == ""
+                break
+            else
+                let g:preferred_framework = l:framework
+            endif
+        else
+            break
+        endif
+    endwhile
+
+    return l:res
 endfunction
 
 " vim:set ft=vim sw=4 sts=2 et:
