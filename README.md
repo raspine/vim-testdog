@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(MyTestCase)
 ..
 ```
 With the cursor inside MyTestCase:
-```
+```VimL
 :echo TestCaseArg()
 ```
 should generate:
@@ -38,19 +38,20 @@ Pathogen, Vundle, etc..
 
 ## Usage
 Example:
-```
+```VImL
 " copy test argument to clipboard
 nnoremap <leader>tr :call setreg('+', TestCaseArg())<cr>
 ```
 I typically combine TestDog with [vim-target](https://github.com/raspine/vim-target) 
 
 These are example mappings to invoke vim-target and vim-testdog:
-```
+```VimL
 " run test suite directly in vim
 nnoremap <leader>tt :exec "!". FindExeTarget() . TestSuiteArg()<cr>
 
-" spawn a gdb session in a separate terminal using Tim Pope's vim-dispatch plugin
-nnoremap <leader>tg :exec "Spawn urxvt -e gdb --args " FindExeTarget() . TestCaseArg()<cr>
+" Spawn a gdb session in a separate terminal. The ending  '&' unlocks
+" Vim while debugging.
+nnoremap <leader>tg :exec "!urxvt -e gdb --args " FindExeTarget() . TestCaseArg()<cr>
 
 " run the test suite under valgrind
 nnoremap <leader>tv :exec "!valgrind " . FindExeTarget() . TestSuiteArg()<cr>
@@ -61,7 +62,7 @@ nnoremap <leader>tr :call setreg('+', FindExeTarget() . TestCaseArg())<cr>
 
 I further combine vim-testdog with [vim-breakgutter](http://github.com/raspine/vim-breakgutter) providing
 the following magical line whenever I need to debug a test case:
-```
+```VimL
 " Spawn requires Tim Pope's vim-dispatch plugin
 nnoremap <leader>dg :exec "Spawn urxvt -e gdb " . GetGdbBreakpointArgs() . " --args " . FindExeTarget() . TestCaseArg()<cr>
 
@@ -69,7 +70,7 @@ nnoremap <leader>dg :exec "Spawn urxvt -e gdb " . GetGdbBreakpointArgs() . " --a
 
 ## Variables
 There's only one variable you might want to set in your .vimrc:
-```
+```VimL
 let g:preferred_framework = 'boost' "default
 _OR_
 let g:preferred_framework = 'google'
