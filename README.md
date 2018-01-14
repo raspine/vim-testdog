@@ -63,8 +63,7 @@ nnoremap <leader>tr :call setreg('+', FindExeTarget() . TestCaseArg())<cr>
 I further combine vim-testdog with [vim-breakgutter](http://github.com/raspine/vim-breakgutter) providing
 the following magical line whenever I need to debug a test case:
 ```VimL
-" Spawn requires Tim Pope's vim-dispatch plugin
-nnoremap <leader>dg :exec "Spawn urxvt -e gdb " . GetGdbBreakpointArgs() . " --args " . FindExeTarget() . TestCaseArg()<cr>
+nnoremap <leader>dg :exec "!urxvt -e gdb " . GetGdbBreakpointArgs() . " --args " . FindExeTarget() . TestCaseArg() . '&'<cr>
 
 ```
 
