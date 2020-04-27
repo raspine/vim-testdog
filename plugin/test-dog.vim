@@ -2,14 +2,15 @@
 " Author:       Jörgen Scott (jorgen.scott@gmail.com)
 " Version:      0.1
 
-if exists("g:loaded_test_dog") || &cp || v:version < 700
-    finish
-endif
+" if exists("g:loaded_test_dog") || &cp || v:version < 700
+"     finish
+" endif
 let g:loaded_test_dog = 1
 
 let g:test_framework = {}
 let g:test_framework.boost = 1
-let g:test_framework.google = 2
+let g:test_framework.catch = 2
+let g:test_framework.google = 3
 let g:preferred_framework = 'boost'
 
 " public interface
@@ -89,6 +90,36 @@ function! s:BuildBoostTestCaseArg()
     return dog_line . "/" . test_case
 endfunction
 " end of boost unit test frame work methods
+
+" start of catch unit test frame work methods
+function! s:FindCatchTestSuite()
+    let l:curr_pos = getpos(".")
+    exec "silent! keeppatterns ?\\TEST_CASE\\_s*("
+    let l:new_pos = getpos(".")
+    if l:curr_pos == new_pos
+        return ""
+    endif
+    exec "normal! f[w"
+    let l:test_suite = '['.expand("<cword>").']'
+    :call setpos('.', curr_pos)
+    return l:test_suite
+endfunction
+
+function! s:FindCatchTestCase()
+    let l:curr_pos = getpos(".")
+    exec "silent! keeppatterns ?\\TEST_CASE\\_s*("
+    let l:new_pos = getpos(".")
+    if curr_pos == new_pos
+        return ""
+    endif
+    exec 'normal! f"'
+    " TODO: how to assign expression to variable without using register?
+    exec 'normal! "ayf"'
+    let test_case = @a
+    :call setpos('.', curr_pos)
+    return test_case
+endfunction
+" end of catch unit test frame work methods
 
 " start of google unit test frame work methods
 function! s:FindGoogleTestSuite()
@@ -176,6 +207,8 @@ function! s:BuildTestRunnerTestSuiteArg()
     while 1
         if get(g:test_framework, g:preferred_framework) == g:test_framework.boost
             let l:res = <SID>BuildBoostTestSuiteArg()
+        elseif get(g:test_framework, g:preferred_framework) == g:test_framework.catch
+            let l:res = <SID>FindCatchTestSuite()
         elseif get(g:test_framework, g:preferred_framework) == g:test_framework.google
             let l:res = <SID>BuildGoogleTestSuiteArg()
         endif
@@ -201,6 +234,8 @@ function! s:BuildTestRunnerTestCaseArg()
     while 1
         if get(g:test_framework, g:preferred_framework) == g:test_framework.boost
             let l:res = <SID>BuildBoostTestCaseArg()
+        elseif get(g:test_framework, g:preferred_framework) == g:test_framework.catch
+            let l:res = <SID>FindCatchTestCase()
         elseif get(g:test_framework, g:preferred_framework) == g:test_framework.google
             let l:res = <SID>BuildGoogleTestCaseArg()
         endif
