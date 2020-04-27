@@ -2,9 +2,9 @@
 " Author:       Jörgen Scott (jorgen.scott@gmail.com)
 " Version:      0.1
 
-" if exists("g:loaded_test_dog") || &cp || v:version < 700
-"     finish
-" endif
+if exists("g:loaded_test_dog") || &cp || v:version < 700
+    finish
+endif
 let g:loaded_test_dog = 1
 
 let g:test_framework = {}
