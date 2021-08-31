@@ -14,6 +14,15 @@ let g:test_framework.google = 3
 let g:preferred_framework = 'boost'
 
 " public interface
+function TestFileArg()
+    let l:test_arg = <SID>BuildTestRunnerTestFileArg()
+    if l:test_arg == ""
+        return
+    endif
+
+    return " " . l:test_arg
+endfunction
+
 function! TestSuiteArg()
     let l:test_arg = <SID>BuildTestRunnerTestSuiteArg()
     if l:test_arg == ""
@@ -35,11 +44,22 @@ endfunction
 " local methods
 "
 " start of boost unit test frame work methods
+function! s:FindAllBoostTests()
+    let l:curr_pos = getpos(".")
+	exec "normal! gg"
+    let l:all_tests = ""
+    while search("SUITE\\_s*(", 'W') != 0
+        exec "normal! f(w"
+    	let all_tests .= expand("<cword>") . ','
+    endwhile
+    " seems to be no need to remove last ','
+    :call setpos('.', curr_pos)
+    return all_tests
+endfunction
+
 function! s:FindBoostTestSuite()
     let l:curr_pos = getpos(".")
-    exec "silent! keeppatterns ?\\SUITE\\_s*("
-    let l:new_pos = getpos(".")
-    if curr_pos == new_pos
+    if search("SUITE\\_s*(", 'b') == 0
         return ""
     endif
     exec "normal! f(w"
@@ -50,15 +70,25 @@ endfunction
 
 function! s:FindBoostTestCase()
     let l:curr_pos = getpos(".")
-    exec "silent! keeppatterns ?\\CASE\\_s*("
-    let l:new_pos = getpos(".")
-    if curr_pos == new_pos
+    if search("CASE\\_s*(", 'b') == 0
         return ""
     endif
+    let l:new_pos = getpos(".")
     exec "normal! f(w"
     let test_case = expand("<cword>")
     :call setpos('.', curr_pos)
     return test_case
+endfunction
+
+function! s:BuildAllBoostTestArg()
+    let l:dog_line = "--run_test="
+
+    let l:test_suites = <SID>FindAllBoostTests()
+    if test_suites == ""
+        echoerr "No scent of test suites"
+        return ""
+    endif
+    return dog_line . test_suites
 endfunction
 
 function! s:BuildBoostTestSuiteArg()
@@ -66,7 +96,7 @@ function! s:BuildBoostTestSuiteArg()
 
     let l:test_suite = <SID>FindBoostTestSuite()
     if test_suite == ""
-        echoerr "Woof! No scent of test suite"
+        echoerr "No scent of test suite"
         return ""
     endif
     return dog_line . test_suite
@@ -77,14 +107,14 @@ function! s:BuildBoostTestCaseArg()
 
     let l:test_suite = <SID>FindBoostTestSuite()
     if test_suite == ""
-        echoerr "Woof! No scent of test suite"
+        echoerr "No scent of test suite"
         return ""
     endif
     let dog_line = dog_line . test_suite
 
     let l:test_case = <SID>FindBoostTestCase()
     if test_case == ""
-        echoerr "Woof! No scent of test case"
+        echoerr "No scent of test case"
         return ""
     endif
     return dog_line . "/" . test_case
@@ -94,11 +124,10 @@ endfunction
 " start of catch unit test frame work methods
 function! s:FindCatchTestSuite()
     let l:curr_pos = getpos(".")
-    exec "silent! keeppatterns ?\\TEST_CASE\\_s*("
-    let l:new_pos = getpos(".")
-    if l:curr_pos == new_pos
+    if search("TEST_CASE\\_s*(", 'b') == 0
         return ""
     endif
+    let l:new_pos = getpos(".")
     exec "normal! f[w"
     let l:test_suite = '['.expand("<cword>").']'
     :call setpos('.', curr_pos)
@@ -107,11 +136,10 @@ endfunction
 
 function! s:FindCatchTestCase()
     let l:curr_pos = getpos(".")
-    exec "silent! keeppatterns ?\\TEST_CASE\\_s*("
-    let l:new_pos = getpos(".")
-    if curr_pos == new_pos
+    if search("TEST_CASE\\_s*(", 'b') == 0
         return ""
     endif
+    let l:new_pos = getpos(".")
     exec 'normal! f"'
     " TODO: how to assign expression to variable without using register?
     exec 'normal! "ayf"'
@@ -124,11 +152,10 @@ endfunction
 " start of google unit test frame work methods
 function! s:FindGoogleTestSuite()
     let l:curr_pos = getpos(".")
-    exec "silent! keeppatterns ?\\TEST\\_s*("
-    let l:new_pos = getpos(".")
-    if curr_pos == new_pos
+    if search("TEST\\_s*(", 'b') == 0
         return ""
     endif
+    let l:new_pos = getpos(".")
     exec "normal! f(w"
     let test_suite = expand("<cword>")
     :call setpos('.', curr_pos)
@@ -137,11 +164,10 @@ endfunction
 
 function! s:FindGoogleTestCase()
     let l:curr_pos = getpos(".")
-    exec "silent! keeppatterns ?\\TEST\\_s*("
-    let l:new_pos = getpos(".")
-    if curr_pos == new_pos
+    if search("TEST\\_s*(", 'b') == 0
         return ""
     endif
+    let l:new_pos = getpos(".")
     exec "normal! f(%b"
     let test_case = expand("<cword>")
     :call setpos('.', curr_pos)
@@ -153,7 +179,7 @@ function! s:BuildGoogleTestSuiteArg()
 
     let l:test_suite = <SID>FindGoogleTestSuite()
     if test_suite == ""
-        echoerr "Woof! No scent of test suite"
+        echoerr "No scent of test suite"
         return ""
     endif
     return dog_line . test_suite
@@ -164,14 +190,14 @@ function! s:BuildGoogleTestCaseArg()
 
     let l:test_suite = <SID>FindGoogleTestSuite()
     if test_suite == ""
-        echoerr "Woof! No scent of test suite"
+        echoerr "No scent of test suite"
         return ""
     endif
     let dog_line = dog_line . test_suite
 
     let l:test_case = <SID>FindGoogleTestCase()
     if test_case == ""
-        echoerr "Woof! No scent of test case"
+        echoerr "No scent of test case"
         return ""
     endif
     return dog_line . "." . test_case
@@ -199,6 +225,33 @@ function! s:FrameworkSelect()
             return sort(keys(g:test_framework))[sel - 1]
         endif
     endwhile
+endfunction
+
+" test runner router method
+function! s:BuildTestRunnerTestFileArg()
+    let l:res = ""
+    while 1
+        if get(g:test_framework, g:preferred_framework) == g:test_framework.boost
+            let l:res = <SID>BuildAllBoostTestArg()
+        elseif get(g:test_framework, g:preferred_framework) == g:test_framework.catch
+            let l:res = "TODO"
+        elseif get(g:test_framework, g:preferred_framework) == g:test_framework.google
+            let l:res = "TODO"
+        endif
+
+        if l:res == ""
+            let l:framework = <SID>FrameworkSelect()
+            if l:framework == ""
+                break
+            else
+                let g:preferred_framework = l:framework
+            endif
+        else
+            break
+        endif
+    endwhile
+
+    return l:res
 endfunction
 
 " test runner router method
