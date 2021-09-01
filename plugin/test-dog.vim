@@ -45,7 +45,7 @@ endfunction
 " start of boost unit test frame work methods
 function! s:FindBoostFileTests()
     let l:curr_pos = getpos(".")
-	exec "normal! gg"
+    exec "normal! gg"
     let l:all_tests = ""
     while search("SUITE\\_s*(", 'W') != 0
         exec "normal! f(w"
@@ -122,8 +122,9 @@ endfunction
 " start of catch unit test frame work methods
 function! s:FindCatchFileTests()
     let l:curr_pos = getpos(".")
+    exec "normal! gg"
     let l:all_tests = ""
-    while search("TEST_CASE\\_s*(", 'b') != 0
+    while search("TEST_CASE\\_s*(", 'W') != 0
         exec "normal! f[w"
         let all_tests .= '['.expand("<cword>").']' . ','
     endwhile
