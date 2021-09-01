@@ -1,6 +1,5 @@
 " test-dog.vim - Creates a unit test execution line
 " Author:       Jörgen Scott (jorgen.scott@gmail.com)
-" Version:      0.1
 
 if exists("g:loaded_test_dog") || &cp || v:version < 700
     finish
@@ -44,7 +43,7 @@ endfunction
 " local methods
 "
 " start of boost unit test frame work methods
-function! s:FindAllBoostTests()
+function! s:FindBoostFileTests()
     let l:curr_pos = getpos(".")
 	exec "normal! gg"
     let l:all_tests = ""
@@ -73,17 +72,16 @@ function! s:FindBoostTestCase()
     if search("CASE\\_s*(", 'b') == 0
         return ""
     endif
-    let l:new_pos = getpos(".")
     exec "normal! f(w"
     let test_case = expand("<cword>")
     :call setpos('.', curr_pos)
     return test_case
 endfunction
 
-function! s:BuildAllBoostTestArg()
+function! s:BuildBoostFileTestsArg()
     let l:dog_line = "--run_test="
 
-    let l:test_suites = <SID>FindAllBoostTests()
+    let l:test_suites = <SID>FindBoostFileTests()
     if test_suites == ""
         echoerr "No scent of test suites"
         return ""
@@ -122,12 +120,22 @@ endfunction
 " end of boost unit test frame work methods
 
 " start of catch unit test frame work methods
+function! s:FindCatchFileTests()
+    let l:curr_pos = getpos(".")
+    let l:all_tests = ""
+    while search("TEST_CASE\\_s*(", 'b') != 0
+        exec "normal! f[w"
+        let all_tests .= '['.expand("<cword>").']' . ','
+    endwhile
+    :call setpos('.', curr_pos)
+    return all_tests
+endfunction
+
 function! s:FindCatchTestSuite()
     let l:curr_pos = getpos(".")
     if search("TEST_CASE\\_s*(", 'b') == 0
         return ""
     endif
-    let l:new_pos = getpos(".")
     exec "normal! f[w"
     let l:test_suite = '['.expand("<cword>").']'
     :call setpos('.', curr_pos)
@@ -139,7 +147,6 @@ function! s:FindCatchTestCase()
     if search("TEST_CASE\\_s*(", 'b') == 0
         return ""
     endif
-    let l:new_pos = getpos(".")
     exec 'normal! f"'
     " TODO: how to assign expression to variable without using register?
     exec 'normal! "ayf"'
@@ -155,7 +162,6 @@ function! s:FindGoogleTestSuite()
     if search("TEST\\_s*(", 'b') == 0
         return ""
     endif
-    let l:new_pos = getpos(".")
     exec "normal! f(w"
     let test_suite = expand("<cword>")
     :call setpos('.', curr_pos)
@@ -167,7 +173,6 @@ function! s:FindGoogleTestCase()
     if search("TEST\\_s*(", 'b') == 0
         return ""
     endif
-    let l:new_pos = getpos(".")
     exec "normal! f(%b"
     let test_case = expand("<cword>")
     :call setpos('.', curr_pos)
@@ -232,11 +237,11 @@ function! s:BuildTestRunnerTestFileArg()
     let l:res = ""
     while 1
         if get(g:test_framework, g:preferred_framework) == g:test_framework.boost
-            let l:res = <SID>BuildAllBoostTestArg()
+            let l:res = <SID>BuildBoostFileTestsArg()
         elseif get(g:test_framework, g:preferred_framework) == g:test_framework.catch
-            let l:res = "TODO"
+            let l:res = <SID>FindCatchFileTests()
         elseif get(g:test_framework, g:preferred_framework) == g:test_framework.google
-            let l:res = "TODO"
+            let l:res = "TODO: Not implemented"
         endif
 
         if l:res == ""
