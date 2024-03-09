@@ -107,17 +107,33 @@ endfunction
 
 function! s:FindCatchTestCase()
     let l:curr_pos = getpos(".")
-    exec "silent! keeppatterns ?\\TEST_CASE\\_s*("
-    let l:new_pos = getpos(".")
-    if curr_pos == new_pos
+    let l:line_section = search("SECTION\\_s*(", 'b')
+    :call setpos('.', curr_pos)
+    let l:line_test_case = search("TEST_CASE\\_s*(", 'b')
+    if l:line_section == 0 || l:line_test_case == 0
         return ""
     endif
+    :call setpos('.', curr_pos)
+    " get max of SECTION AND TEST_CASE
+    let l:use_line = 0
+    let l:use_section = 0
+    if l:line_section > l:line_test_case
+        let l:use_line = l:line_section
+        let l:use_section = 1
+    else
+        let l:use_line = l:line_test_case
+    endif
+    :call cursor(l:use_line, 1)
+
     exec 'normal! f"'
     " TODO: how to assign expression to variable without using register?
     exec 'normal! "ayf"'
-    let test_case = @a
     :call setpos('.', curr_pos)
-    return test_case
+    let l:test_case = @a
+    if l:use_section
+        return '-c ' . l:test_case
+    endif
+    return l:test_case
 endfunction
 " end of catch unit test frame work methods
 
