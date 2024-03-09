@@ -143,17 +143,34 @@ function! s:FindCatchTestSuite()
     return l:test_suite
 endfunction
 
+" what this does..:
+" when the most above catch keyword is 'SECTION', it return the section string
+" when the most above catch keyword is 'TEST_CASE', it return the test_case string
 function! s:FindCatchTestCase()
     let l:curr_pos = getpos(".")
-    if search("TEST_CASE\\_s*(", 'b') == 0
+    let l:line_section = search("SECTION\\_s*(", 'b')
+    :call setpos('.', curr_pos)
+    let l:line_test_case = search("TEST_CASE\\_s*(", 'b')
+    if l:line_section == 0 || l:line_test_case == 0
         return ""
     endif
+    :call setpos('.', curr_pos)
+    echom l:curr_pos
+    " get max of SECTION AND TEST_CASE
+    let l:use_line = 0
+    if l:line_section > l:line_test_case
+        let l:use_line = l:line_section
+    else
+        let l:use_line = l:line_test_case
+    endif
+    :call cursor(l:use_line, 0)
+
     exec 'normal! f"'
     " TODO: how to assign expression to variable without using register?
     exec 'normal! "ayf"'
     let test_case = @a
     :call setpos('.', curr_pos)
-    return test_case
+    echom test_case
 endfunction
 " end of catch unit test frame work methods
 
