@@ -110,7 +110,7 @@ function! s:FindCatchTestCase()
     let l:line_section = search("SECTION\\_s*(", 'b')
     :call setpos('.', curr_pos)
     let l:line_test_case = search("TEST_CASE\\_s*(", 'b')
-    if l:line_section == 0 || l:line_test_case == 0
+    if l:line_section == 0 && l:line_test_case == 0
         return ""
     endif
     :call setpos('.', curr_pos)
@@ -196,7 +196,6 @@ endfunction
 
 " prompts the caller for changing preferred test framework
 function! s:FrameworkSelect()
-    echo "Try another framework?"
     let l:sel = 0
     while 1
         echo '0) abort'
